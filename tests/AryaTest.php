@@ -17,7 +17,7 @@ class AryaTest extends \PHPUnit_Framework_TestCase
     public function testCanBeInitialized()
     {
         $stubsDir = dirname(__FILE__).'/stubs';
-        $srcDir = $stubsDir.'/test1';
+        $srcDir = $stubsDir.'/test1/';
 
         $arya = new Arya($srcDir);
 
@@ -27,8 +27,8 @@ class AryaTest extends \PHPUnit_Framework_TestCase
     public function testSourceDirectoryCanBeChanged()
     {
         $stubsDir = dirname(__FILE__).'/stubs';
-        $srcDir = $stubsDir.'/test1';
-        $newSrcDir = $stubsDir.'/test2';
+        $srcDir = $stubsDir.'/test1/';
+        $newSrcDir = $stubsDir.'/test2/';
 
         $arya = new Arya($srcDir);
         $arya = $arya->setSourceDirectory($newSrcDir);
@@ -40,8 +40,8 @@ class AryaTest extends \PHPUnit_Framework_TestCase
     public function testProvidesDefaultDestinationDirectory()
     {
         $stubsDir = dirname(__FILE__).'/stubs';
-        $srcDir = $stubsDir.'/test1';
-        $destinationDir = $srcDir.'/../dist';
+        $srcDir = $stubsDir.'/test1/';
+        $destinationDir = $srcDir.'../dist/';
 
         $arya = new Arya($srcDir);
 
@@ -51,8 +51,8 @@ class AryaTest extends \PHPUnit_Framework_TestCase
     public function testDestinationDirectoryCanBeChanged()
     {
         $stubsDir = dirname(__FILE__).'/stubs';
-        $srcDir = $stubsDir.'/test1';
-        $destinationDir = $stubsDir.'/custom-destination';
+        $srcDir = $stubsDir.'/test1/';
+        $destinationDir = $stubsDir.'/custom-destination/';
 
         $arya = new Arya($srcDir);
         $arya = $arya->setDestinationDirectory($destinationDir);
@@ -64,7 +64,7 @@ class AryaTest extends \PHPUnit_Framework_TestCase
     public function testCanReadAFile()
     {
         $stubsDir = dirname(__FILE__).'/stubs';
-        $srcDir = $stubsDir.'/test1';
+        $srcDir = $stubsDir.'/test1/';
 
         $arya = new Arya($srcDir);
         $data = $arya->readFile('index.md');
@@ -83,9 +83,39 @@ class AryaTest extends \PHPUnit_Framework_TestCase
     public function testShouldDetectInvalidFrontMatter()
     {
         $stubsDir = dirname(__FILE__).'/stubs';
-        $srcDir = $stubsDir.'/test1';
+        $srcDir = $stubsDir.'/test3';
 
         $arya = new Arya($srcDir);
         $arya->readFile('invalid-front-matter.md');
+    }
+
+    public function testCanReadAllSourceFiles()
+    {
+        $stubsDir = dirname(__FILE__).'/stubs';
+        $srcDir = $stubsDir.'/test1/';
+
+        $arya = new Arya($srcDir);
+        $files = $arya->read();
+
+        $expected = [
+            'index.md' => [
+                'title'   => 'Homepage',
+                'content' => 'Home page content.',
+            ],
+            'subdir1/index.md' => [
+                'title'   => 'Homepage',
+                'content' => 'Home page content.',
+            ],
+            'subdir1/subsubdir1/index.md' => [
+                'title'   => 'Homepage',
+                'content' => 'Home page content.',
+            ],
+            'subdir2/index.md' => [
+                'title'   => 'Homepage',
+                'content' => 'Home page content.',
+            ],
+        ];
+
+        $this->assertEquals($expected, $files);
     }
 }

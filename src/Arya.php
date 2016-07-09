@@ -33,7 +33,7 @@ final class Arya
     {
         $this->setSourceDirectory($sourceDirectory);
 
-        $destinationDirectory = rtrim($sourceDirectory, '/').'/../dist';
+        $destinationDirectory = $sourceDirectory.'../dist';
         $this->setDestinationDirectory($destinationDirectory);
     }
 
@@ -47,7 +47,7 @@ final class Arya
         if (!is_dir($directory)) {
             throw new \InvalidArgumentException(sprintf('Source directory "%s" does not exist.', $directory));
         }
-        $this->sourceDirectory = $directory;
+        $this->sourceDirectory = rtrim($directory, '/').'/';
 
         return $this;
     }
@@ -61,13 +61,13 @@ final class Arya
     }
 
     /**
-     * @param string $destinationDirectory
+     * @param string $directory
      *
      * @return $this
      */
-    public function setDestinationDirectory(string $destinationDirectory)
+    public function setDestinationDirectory(string $directory)
     {
-        $this->destinationDirectory = $destinationDirectory;
+        $this->destinationDirectory = rtrim($directory, '/').'/';
 
         return $this;
     }
@@ -80,6 +80,30 @@ final class Arya
         return $this->destinationDirectory;
     }
 
+    public function read()
+    {
+        $sourceDirectory = $this->sourceDirectory;
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($sourceDirectory));
+        $sourceDirectoryLength = strlen($this->sourceDirectory);
+        $files = [];
+        foreach ($iterator as $name => $fileInfo) {
+            /** @var \SplFileInfo $fileInfo */
+            if ($fileInfo->isDir()) {
+                continue;
+            }
+
+            $filename = substr($fileInfo->getRealPath(), $sourceDirectoryLength);
+            $files[$filename] = $this->readFile($filename);
+        }
+
+        return $files;
+    }
+
+    /**
+     * @param string $filename
+     *
+     * @return array
+     */
     public function readFile(string $filename)
     {
         $filename = $this->sourceDirectory.'/'.$filename;
@@ -101,7 +125,7 @@ final class Arya
 ."){1}[\r\n|\n]*(.*)$~s";                                         # $matches[4] document content
 
         if (preg_match($regex, $content, $matches) === 1) { // There is a Front matter
-            $file = trim($matches[2]) !== '' ? $this->getYamlParser()->parse(trim($matches[2])) : [];
+            $file = trim($matches[2]) !== '' ? (array) $this->getYamlParser()->parse(trim($matches[2])) : [];
 
             if (isset($file['content'])) {
                 throw new \LogicException('The "content" key can not be part of the front-matter.');
