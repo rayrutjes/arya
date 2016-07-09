@@ -13,4 +13,12 @@ class AryaTest extends \PHPUnit_Framework_TestCase
     {
         new Arya('non-existing-directory');
     }
+
+    public function testCanBeInitialized()
+    {
+        $dir = dirname(__FILE__).'/stubs/test1';
+        $arya = new Arya($dir);
+
+        $this->assertEquals($dir, $arya->getSourceDirectory());
+    }
 }

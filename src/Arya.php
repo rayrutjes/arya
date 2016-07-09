@@ -31,4 +31,12 @@ final class Arya
 
         return $this;
     }
+
+    /**
+     * @return string
+     */
+    public function getSourceDirectory()
+    {
+        return $this->sourceDirectory;
+    }
 }
