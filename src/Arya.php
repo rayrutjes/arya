@@ -146,4 +146,19 @@ final class Arya
 
         return $this;
     }
+
+    /**
+     * @param array $files
+     * @param array $plugins
+     *
+     * @return array
+     */
+    public function run(array $files, array $plugins)
+    {
+        foreach ($plugins as $plugin) {
+            $files = $plugin($files, $this);
+        }
+
+        return $files;
+    }
 }

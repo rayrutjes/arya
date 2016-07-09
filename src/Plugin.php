@@ -8,7 +8,7 @@ interface Plugin
      * @param array $files
      * @param Arya  $arya
      *
-     * @return
+     * @return array
      */
-    public function __invoke(array &$files, Arya $arya);
+    public function __invoke(array $files, Arya $arya);
 }
