@@ -10,11 +10,19 @@ final class Arya
     private $sourceDirectory;
 
     /**
+     * @var string
+     */
+    private $buildDirectory;
+
+    /**
      * @param string $sourceDirectory
      */
     public function __construct(string $sourceDirectory)
     {
         $this->setSourceDirectory($sourceDirectory);
+
+        $buildDirectory = rtrim($sourceDirectory, '/').'/../build';
+        $this->setBuildDirectory($buildDirectory);
     }
 
     /**
@@ -38,5 +46,25 @@ final class Arya
     public function getSourceDirectory()
     {
         return $this->sourceDirectory;
+    }
+
+    /**
+     * @param string $buildDirectory
+     *
+     * @return $this
+     */
+    public function setBuildDirectory(string $buildDirectory)
+    {
+        $this->buildDirectory = $buildDirectory;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBuildDirectory()
+    {
+        return $this->buildDirectory;
     }
 }
