@@ -37,27 +37,27 @@ class AryaTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($newSrcDir, $arya->getSourceDirectory());
     }
 
-    public function testProvidesDefaultBuildDirectory()
+    public function testProvidesDefaultDestinationDirectory()
     {
         $stubsDir = dirname(__FILE__).'/stubs';
         $srcDir = $stubsDir.'/test1';
-        $buildDir = $srcDir.'/../build';
+        $destinationDir = $srcDir.'/../dist';
 
         $arya = new Arya($srcDir);
 
-        $this->assertEquals($buildDir, $arya->getBuildDirectory());
+        $this->assertEquals($destinationDir, $arya->getDestinationDirectory());
     }
 
-    public function testBuildDirectoryCanBeChanged()
+    public function testDestinationDirectoryCanBeChanged()
     {
         $stubsDir = dirname(__FILE__).'/stubs';
         $srcDir = $stubsDir.'/test1';
-        $buildDir = $stubsDir.'/custom-build';
+        $destinationDir = $stubsDir.'/custom-destination';
 
         $arya = new Arya($srcDir);
-        $arya = $arya->setBuildDirectory($buildDir);
+        $arya = $arya->setDestinationDirectory($destinationDir);
 
         $this->assertInstanceOf(Arya::class, $arya);
-        $this->assertEquals($buildDir, $arya->getBuildDirectory());
+        $this->assertEquals($destinationDir, $arya->getDestinationDirectory());
     }
 }

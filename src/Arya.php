@@ -2,6 +2,8 @@
 
 namespace RayRutjes\Arya;
 
+use Symfony\Component\Yaml\Yaml;
+
 final class Arya
 {
     /**
@@ -12,7 +14,17 @@ final class Arya
     /**
      * @var string
      */
-    private $buildDirectory;
+    private $destinationDirectory;
+
+    /**
+     * @var Yaml
+     */
+    private $yamlParser;
+
+    /**
+     * @var array
+     */
+    private $plugins = array();
 
     /**
      * @param string $sourceDirectory
@@ -21,8 +33,8 @@ final class Arya
     {
         $this->setSourceDirectory($sourceDirectory);
 
-        $buildDirectory = rtrim($sourceDirectory, '/').'/../build';
-        $this->setBuildDirectory($buildDirectory);
+        $destinationDirectory = rtrim($sourceDirectory, '/').'/../dist';
+        $this->setDestinationDirectory($destinationDirectory);
     }
 
     /**
@@ -49,13 +61,13 @@ final class Arya
     }
 
     /**
-     * @param string $buildDirectory
+     * @param string $destinationDirectory
      *
      * @return $this
      */
-    public function setBuildDirectory(string $buildDirectory)
+    public function setDestinationDirectory(string $destinationDirectory)
     {
-        $this->buildDirectory = $buildDirectory;
+        $this->destinationDirectory = $destinationDirectory;
 
         return $this;
     }
@@ -63,8 +75,74 @@ final class Arya
     /**
      * @return string
      */
-    public function getBuildDirectory()
+    public function getDestinationDirectory()
     {
-        return $this->buildDirectory;
+        return $this->destinationDirectory;
+    }
+
+    public function readFile(string $filename)
+    {
+        if (!file_exists($filename)) {
+            throw new \InvalidArgumentException(sprintf('File "%s" does not exist.'), $filename);
+        }
+
+        if (!is_readable($filename)) {
+            throw new \InvalidArgumentException(sprintf('File "%s" is not readable.'), $filename);
+        }
+
+        $content = file_get_contents($filename);
+
+        $file = [];
+        $regex = '~^('
+            .implode('|', array_map('preg_quote', array('---')))  # $matches[1] start separator
+."){1}[\r\n|\n]*(.*?)[\r\n|\n]+("                                 # $matches[2] between separators
+.implode('|', array_map('preg_quote', array('---')))              # $matches[3] end separator
+."){1}[\r\n|\n]*(.*)$~s";                                         # $matches[4] document content
+
+        if (preg_match($regex, $content, $matches) === 1) { // There is a Front matter
+            $file = trim($matches[2]) !== '' ? $this->yamlParser->parse(trim($matches[2])) : [];
+
+            if (isset($file['content'])) {
+                throw new \LogicException('The "content" key can not be part of the front-matter.');
+            }
+
+            $content = ltrim($matches[4]);
+        }
+
+        $file['content'] = $content;
+
+        return $file;
+    }
+
+    /**
+     * @param Yaml $parser
+     *
+     * @return $this
+     */
+    public function setYamlParser(Yaml $parser)
+    {
+        $this->yamlParser = $parser;
+
+        return $this;
+    }
+
+    /**
+     * @return Yaml
+     */
+    public function getYamlParser()
+    {
+        return $this->yamlParser ?? new Yaml();
+    }
+
+    /**
+     * @param Plugin $plugin
+     *
+     * @return $this
+     */
+    public function use (Plugin $plugin)
+    {
+        $this->plugins[] = $plugin;
+
+        return $this;
     }
 }
