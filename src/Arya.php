@@ -82,12 +82,13 @@ final class Arya
 
     public function readFile(string $filename)
     {
+        $filename = $this->sourceDirectory.'/'.$filename;
         if (!file_exists($filename)) {
-            throw new \InvalidArgumentException(sprintf('File "%s" does not exist.'), $filename);
+            throw new \InvalidArgumentException(sprintf('File "%s" does not exist.', $filename));
         }
 
         if (!is_readable($filename)) {
-            throw new \InvalidArgumentException(sprintf('File "%s" is not readable.'), $filename);
+            throw new \InvalidArgumentException(sprintf('File "%s" is not readable.', $filename));
         }
 
         $content = file_get_contents($filename);
@@ -100,13 +101,13 @@ final class Arya
 ."){1}[\r\n|\n]*(.*)$~s";                                         # $matches[4] document content
 
         if (preg_match($regex, $content, $matches) === 1) { // There is a Front matter
-            $file = trim($matches[2]) !== '' ? $this->yamlParser->parse(trim($matches[2])) : [];
+            $file = trim($matches[2]) !== '' ? $this->getYamlParser()->parse(trim($matches[2])) : [];
 
             if (isset($file['content'])) {
                 throw new \LogicException('The "content" key can not be part of the front-matter.');
             }
 
-            $content = ltrim($matches[4]);
+            $content = trim($matches[4]);
         }
 
         $file['content'] = $content;

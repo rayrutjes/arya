@@ -60,4 +60,32 @@ class AryaTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(Arya::class, $arya);
         $this->assertEquals($destinationDir, $arya->getDestinationDirectory());
     }
+
+    public function testCanReadAFile()
+    {
+        $stubsDir = dirname(__FILE__).'/stubs';
+        $srcDir = $stubsDir.'/test1';
+
+        $arya = new Arya($srcDir);
+        $data = $arya->readFile('index.md');
+
+        $expected = [
+            'title'   => 'Homepage',
+            'content' => 'Home page content.',
+        ];
+
+        $this->assertEquals($expected, $data);
+    }
+
+    /**
+     * @expectedException \LogicException
+     */
+    public function testShouldDetectInvalidFrontMatter()
+    {
+        $stubsDir = dirname(__FILE__).'/stubs';
+        $srcDir = $stubsDir.'/test1';
+
+        $arya = new Arya($srcDir);
+        $arya->readFile('invalid-front-matter.md');
+    }
 }
