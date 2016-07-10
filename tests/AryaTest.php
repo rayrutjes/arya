@@ -41,7 +41,7 @@ class AryaTest extends \PHPUnit_Framework_TestCase
     {
         $stubsDir = dirname(__FILE__).'/stubs';
         $srcDir = $stubsDir.'/test1/';
-        $destinationDir = $srcDir.'../dist/';
+        $destinationDir = $srcDir.'../build/';
 
         $arya = new Arya($srcDir);
 
@@ -117,5 +117,37 @@ class AryaTest extends \PHPUnit_Framework_TestCase
         ];
 
         $this->assertEquals($expected, $files);
+    }
+
+    public function testCanBuild()
+    {
+        $stubsDir = dirname(__FILE__).'/stubs';
+        $srcDir = $stubsDir.'/build-test/';
+
+        $arya = new Arya($srcDir);
+        $files = $arya->build();
+
+        $expected = [
+            'index.md' => [
+                'title'   => 'Homepage',
+                'content' => 'Homepage content.',
+            ],
+            'blog/article.md' => [
+                'title'   => 'Article',
+                'content' => 'Article content.',
+            ],
+        ];
+
+        $this->assertEquals($expected, $files);
+
+        $filename = $stubsDir.'/build/index.md';
+        $fileContent = 'Homepage content.';
+        $this->assertFileExists($filename);
+        $this->assertEquals($fileContent, file_get_contents($filename));
+
+        $filename = $stubsDir.'/build/blog/article.md';
+        $fileContent = 'Article content.';
+        $this->assertFileExists($filename);
+        $this->assertEquals($fileContent, file_get_contents($filename));
     }
 }

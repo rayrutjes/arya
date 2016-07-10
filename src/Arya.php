@@ -33,7 +33,7 @@ final class Arya
     {
         $this->setSourceDirectory($sourceDirectory);
 
-        $destinationDirectory = $sourceDirectory.'../dist';
+        $destinationDirectory = $sourceDirectory.'../build';
         $this->setDestinationDirectory($destinationDirectory);
     }
 
@@ -106,7 +106,10 @@ final class Arya
      */
     public function readFile(string $filename)
     {
-        $filename = $this->sourceDirectory.'/'.$filename;
+        if (!$this->isAbsolutePath($filename)) {
+            $filename = $this->sourceDirectory.'/'.$filename;
+        }
+
         if (!file_exists($filename)) {
             throw new \InvalidArgumentException(sprintf('File "%s" does not exist.', $filename));
         }
@@ -182,6 +185,89 @@ final class Arya
         foreach ($plugins as $plugin) {
             $files = $plugin($files, $this);
         }
+
+        return $files;
+    }
+
+    /**
+     * @param array  $files
+     * @param string $directory
+     */
+    public function write(array $files, string $directory)
+    {
+        if (!is_dir($directory)) {
+            $this->createDirectory($directory);
+        }
+
+        foreach ($files as $filename => $data) {
+            $path = $this->toAbsolutePath($directory, $filename);
+            $this->writeFile($path, $data);
+        }
+    }
+
+    /**
+     * @param string $filename
+     * @param array  $data
+     */
+    public function writeFile(string $filename, array $data)
+    {
+        if (!$this->isAbsolutePath($filename)) {
+            throw new \InvalidArgumentException(sprintf('Filename "%s" is not an absolute path.', $filename));
+        }
+
+        $fileDirectory = dirname($filename);
+        if (!file_exists($fileDirectory)) {
+            $this->createDirectory($fileDirectory);
+        }
+
+        file_put_contents($filename, $data['content']);
+    }
+
+    /**
+     * @param string $path
+     *
+     * @return bool
+     */
+    private function isAbsolutePath(string $path)
+    {
+        return strpos($path, '/') === 0;
+    }
+
+    /**
+     * @param string $directory
+     * @param string $filename
+     *
+     * @return string
+     */
+    private function toAbsolutePath(string $directory, string $filename)
+    {
+        if ($this->isAbsolutePath($filename)) {
+            throw new \InvalidArgumentException(sprintf('Filename "%s" should be a relative path.', $filename));
+        }
+
+        return $directory.$filename;
+    }
+
+    /**
+     * @param $path
+     */
+    private function createDirectory($path)
+    {
+        $success = mkdir($path, 0777, true);
+
+        if (false === $success) {
+            throw new \RuntimeException(sprintf('Unable to create directory "%s"', $path));
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function build()
+    {
+        $files = $this->read();
+        $files = $this->run($files, $this->plugins);
+        $this->write($files, $this->destinationDirectory);
 
         return $files;
     }
