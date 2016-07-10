@@ -183,4 +183,28 @@ class AryaTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($expected, $files);
     }
+
+    public function testCanCleanBuildDirectory()
+    {
+        $stubsDir = dirname(__FILE__).'/stubs';
+        $srcDir = $stubsDir.'/clean-test/';
+        $destDir = $stubsDir.'/clean-build/';
+
+        $dirtyFilename = $destDir.'dirty.html';
+        $newFilename = $destDir.'index.md';
+
+        @mkdir($destDir, 0777, true);
+        touch($dirtyFilename);
+
+        $arya = new Arya($srcDir);
+        $arya->setDestinationDirectory($destDir);
+        $arya = $arya->setClean(true);
+
+        $this->assertInstanceOf(Arya::class, $arya);
+
+        $arya->build();
+
+        $this->assertFileNotExists($dirtyFilename);
+        $this->assertFileExists($newFilename);
+    }
 }

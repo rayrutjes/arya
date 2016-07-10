@@ -27,6 +27,11 @@ final class Arya
     private $plugins = array();
 
     /**
+     * @var bool
+     */
+    private $clean = false;
+
+    /**
      * @param string $sourceDirectory
      */
     public function __construct(string $sourceDirectory)
@@ -80,10 +85,23 @@ final class Arya
         return $this->destinationDirectory;
     }
 
+    /**
+     * @param bool $flag
+     *
+     * @return $this
+     */
+    public function setClean(bool $flag)
+    {
+        $this->clean = $flag;
+
+        return $this;
+    }
+
     public function read()
     {
         $sourceDirectory = $this->sourceDirectory;
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($sourceDirectory));
+        $iterator = new \RecursiveDirectoryIterator($sourceDirectory, \RecursiveDirectoryIterator::SKIP_DOTS);
+        $iterator = new \RecursiveIteratorIterator($iterator);
         $sourceDirectoryLength = strlen($this->sourceDirectory);
         $files = [];
         foreach ($iterator as $name => $fileInfo) {
@@ -267,8 +285,36 @@ final class Arya
     {
         $files = $this->read();
         $files = $this->run($files, $this->plugins);
+
+        if (true === $this->clean) {
+            $this->cleanDirectory($this->destinationDirectory);
+        }
         $this->write($files, $this->destinationDirectory);
 
         return $files;
+    }
+
+    /**
+     * @param string $directory
+     */
+    private function cleanDirectory(string $directory)
+    {
+        if (!is_dir($directory)) {
+            return;
+        }
+
+        if (!is_writable($directory)) {
+            throw new \RuntimeException('Directory "%s" is not writable so can not be cleaned.');
+        }
+
+        $iterator = new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::SKIP_DOTS);
+        $iterator = new \RecursiveIteratorIterator($iterator, \RecursiveIteratorIterator::CHILD_FIRST);
+        foreach ($iterator as $file) {
+            if ($file->isDir()) {
+                rmdir($file->getPathname());
+            } else {
+                unlink($file->getPathname());
+            }
+        }
     }
 }
