@@ -150,4 +150,37 @@ class AryaTest extends \PHPUnit_Framework_TestCase
         $this->assertFileExists($filename);
         $this->assertEquals($fileContent, file_get_contents($filename));
     }
+
+    public function testPluginExecution()
+    {
+        $stubsDir = dirname(__FILE__).'/stubs';
+        $srcDir = $stubsDir.'/plugin-test/';
+
+        $plugin1 = new ArbitraryFilePlugin('test1.md', ['title' => 'Test1', 'content' => 'Test1 content.']);
+        $plugin2 = new ArbitraryFilePlugin('blog/test2.md', ['title' => 'Test2', 'content' => 'Test2 content.']);
+
+        $arya = new Arya($srcDir);
+        $arya = $arya->use($plugin1);
+        $this->assertInstanceOf(Arya::class, $arya);
+
+        $arya = $arya->use($plugin2);
+
+        $files = $arya->build();
+        $expected = [
+            'index.md' => [
+                'title'   => 'Homepage',
+                'content' => 'Homepage content.',
+            ],
+            'test1.md' => [
+                'title'   => 'Test1',
+                'content' => 'Test1 content.',
+            ],
+            'blog/test2.md' => [
+                'title'   => 'Test2',
+                'content' => 'Test2 content.',
+            ],
+        ];
+
+        $this->assertEquals($expected, $files);
+    }
 }
