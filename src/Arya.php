@@ -303,10 +303,6 @@ final class Arya
             return;
         }
 
-        if (!is_writable($directory)) {
-            throw new \RuntimeException('Directory "%s" is not writable so can not be cleaned.');
-        }
-
         $iterator = new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::SKIP_DOTS);
         $iterator = new \RecursiveIteratorIterator($iterator, \RecursiveIteratorIterator::CHILD_FIRST);
         foreach ($iterator as $file) {
