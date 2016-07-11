@@ -5,7 +5,7 @@ namespace RayRutjes\Arya\Test;
 use RayRutjes\Arya\Arya;
 use RayRutjes\Arya\Plugin;
 
-class PluginTest implements Plugin
+class ArbitraryFilePlugin implements Plugin
 {
     /**
      * @var string
