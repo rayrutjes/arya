@@ -38,7 +38,7 @@ final class Arya
     {
         $this->setSourceDirectory($sourceDirectory);
 
-        $destinationDirectory = $sourceDirectory.'../build';
+        $destinationDirectory = $this->sourceDirectory.'../build';
         $this->setDestinationDirectory($destinationDirectory);
     }
 
